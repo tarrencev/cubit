@@ -19,7 +19,7 @@ trait Vec2Trait {
     fn dot(self: Vec2, rhs: Vec2) -> Fixed;
     fn floor(self: Vec2) -> Vec2;
     fn norm(self: Vec2) -> Fixed;
-    fn rotate(self: Vec2, angle: Fixed) -> Vec2;
+    fn rotate(self: Vec2, theta: Fixed) -> Vec2;
 }
 
 // Implementations
@@ -138,9 +138,13 @@ fn rem(a: Vec2, b: Vec2) -> Vec2 {
 }
 
 fn rotate(self: Vec2, theta: Fixed) -> Vec2 {
-    new_x = self.x * trig::cos(theta) - self.y * trig::sin(theta);
-    new_y = self.x * trig::sin(theta) + self.y * trig::cos(theta);
-    return Vec2Trait::new(new_x, new_y);
+    let cos_theta = theta.cos();
+    let sin_theta = theta.sin();
+
+    Vec2 {
+        x: self.x * cos_theta - self.y * sin_theta,
+        y: self.x * sin_theta + self.y * cos_theta,
+    }
 }
 
 fn sub(a: Vec2, b: Vec2) -> Vec2 {
@@ -267,15 +271,14 @@ fn test_floor() {
 }
 
 #[test]
+#[available_gas(20000000)]
 fn test_rotate() {
     let a = Vec2Trait::new(
         FixedTrait::new_unscaled(1_u128, false), FixedTrait::new_unscaled(2_u128, true)
     );
-    let theta = FixedTrait::new(HALF_PI_u128 / 3, false);
+    let theta = FixedTrait::new(cubit::math::trig::HALF_PI_u128 / 3, false);
 
     let b = a.rotate(theta);
-    assert_precise(b.x.mag, 2471395088767036514, 'invalid rotate', Option::None(()));
-    assert(b.x.sign == true, 'invalid rotate'); // -0.13397459621556135324
-    assert_precise(b.x.mag, 41174070006739806010, 'invalid rotate', Option::None(()));
-    assert(b.x.sign == false, 'invalid rotate'); // +2.2320508075688772935
+    assert_precise(b.x, 34422093058652067081, 'invalid rotate', Option::None(()));
+    assert_precise(b.y, -22727325933030255122, 'invalid rotate', Option::None(()));
 }
